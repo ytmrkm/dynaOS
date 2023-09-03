@@ -52,4 +52,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: kernel-build
-          path: /home/runner/work/dyna/build/home/runner/work/dyna/dyna/amd64.amd64/sys/GENERIC/kernel*
+          path: /home/runner/work/dyna/build/home/runner/work/dyna/dyna/amd64.amd64/sys/GENERIC/kernel
