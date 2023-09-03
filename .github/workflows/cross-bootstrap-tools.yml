@@ -65,7 +65,7 @@ jobs:
       - name: make buildkernel
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} KERNCONF=GENERIC NO_MODULES=yes buildkernel -s -j$NPROC $EXTRA_MAKE_ARGS
       - name: Upload Kernel Build
-          uses: actions/upload-artifact@v2
-          with:
-            name: kernel-build
-            path: /home/runner/work/dyna/build/home/runner/work/dyna/dyna/amd64.amd64/sys/GENERIC
+        uses: actions/upload-artifact@v2
+        with:
+          name: kernel-build
+          path: /home/runner/work/dyna/build/home/runner/work/dyna/dyna/amd64.amd64/sys/GENERIC
