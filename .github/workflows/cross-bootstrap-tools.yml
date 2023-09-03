@@ -1,4 +1,4 @@
-name: Build Kernel
+name: Cross-build Kernel
 
 on:
   push:
@@ -11,18 +11,14 @@ permissions:
 
 jobs:
   build:
-    name: ${{ matrix.target_arch }} ${{ matrix.os }} (${{ matrix.compiler }})
+    name: Building Dyna Kernel for ${{ matrix.target_arch }} using (${{ matrix.compiler }}) compiler
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         target_arch: [ amd64 ]
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
+        os: [ ubuntu-22.04 ]
         include:
-          - os: ubuntu-20.04
-            compiler: clang-12
-            cross-bindir: /usr/lib/llvm-12/bin
-            pkgs: bmake libarchive-dev clang-12 lld-12
           - os: ubuntu-22.04
             compiler: clang-14
             cross-bindir: /usr/lib/llvm-14/bin
