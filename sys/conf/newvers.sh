@@ -52,8 +52,8 @@
 #
 
 TYPE="Dyna"
-REVISION="15.0"
-BRANCH="CURRENT"
+REVISION="0.1.0"
+BRANCH="DEVELOPMENT"
 if [ -n "${BRANCH_OVERRIDE}" ]; then
 	BRANCH=${BRANCH_OVERRIDE}
 fi
@@ -99,7 +99,7 @@ done
 # no copyright found, use a dummy
 if [ -z "$COPYRIGHT" ]; then
 	COPYRIGHT="/*-
- * Copyright (c) 1992-$year The FreeBSD Project, 2023-$year ALCHEON LLC.
+ * Copyright (c) 2023-$year ALCHEON LLC.
  *
  */"
 fi
