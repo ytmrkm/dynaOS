@@ -5,6 +5,7 @@ on:
     branches: [ main, 'stable/13' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target_arch: [ amd64 ]
+        target_arch: [ amd64, aarch64 ]
         os: [ ubuntu-22.04 ]
         include:
           - os: ubuntu-22.04
@@ -25,6 +26,8 @@ jobs:
             pkgs: bmake libarchive-dev clang-14 lld-14
           - target_arch: amd64
             target: amd64
+          - target_arch: aarch64
+            target: aarch64
     steps:
       - uses: actions/checkout@v3
       - name: install packages (Ubuntu)
@@ -52,4 +55,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: kernel-build
-          path: /home/runner/work/dyna/build/home/runner/work/dyna/dyna/amd64.amd64/sys/GENERIC/kernel
+          path: /home/runner/work/dyna/build/home/runner/work/dyna/dyna/${{ matrix.target_arch }}.${{ matrix.target_arch }}/sys/GENERIC/kernel
