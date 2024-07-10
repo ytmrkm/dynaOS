@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: kernel-${{matrix.target}}
-          path: /home/runner/work/dyna/build/home/runner/work/dyna/dyna/${{ matrix.target }}.${{ matrix.target_arch }}/sys/GENERIC/kernel
+          path: /home/runner/work/dynaOS/build/home/runner/work/dynaOS/dynaOS/${{ matrix.target }}.${{ matrix.target_arch }}/sys/GENERIC/kernel
       - name: Build ISO
         run: make -C release cdrom -DNOPORTS -DNODOC
         
