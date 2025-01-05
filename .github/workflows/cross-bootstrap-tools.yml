@@ -1,6 +1,10 @@
 name: Cross-build Kernel
 
 on:
+  push:
+    branches: [ main, 'stable/13' ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -52,7 +56,3 @@ jobs:
         with:
           name: kernel-${{matrix.target}}
           path: /home/runner/work/dynaOS/build/home/runner/work/dynaOS/dynaOS/${{ matrix.target }}.${{ matrix.target_arch }}/sys/GENERIC/kernel
-      - name: Build ISO
-        run: make -C release cdrom -DNOPORTS -DNODOC
-        
-        
