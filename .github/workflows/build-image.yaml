@@ -1,4 +1,4 @@
-name: Build Image
+name: Build Kernel and ISO
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build DynaOS ISO for ${{ matrix.target_arch }}
+    name: Building Dyna Kernel and ISO for ${{ matrix.target_arch }} using (${{ matrix.compiler }}) compiler
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,13 +31,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install required packages (Ubuntu)
+      - name: Install Packages (Ubuntu)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update --quiet || true
           sudo apt-get -yq --no-install-suggests --no-install-recommends install ${{ matrix.pkgs }}
 
-      - name: Set up environment
+      - name: Set up Environment
         run: |
           echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
           if [ -n "${{ matrix.cross-bindir }}" ]; then
@@ -45,33 +45,30 @@ jobs:
           fi
           mkdir -p ../build
           echo "MAKEOBJDIRPREFIX=${PWD%/*}/build" >> $GITHUB_ENV
-          echo "NPROC=$(getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || echo 1)" >> $GITHUB_ENV
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)" >> $GITHUB_ENV
 
       - name: Bootstrap bmake
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -n
 
-      - name: Build world and kernel
-        run: |
-          cd /usr/src
-          make buildworld buildkernel TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -j$NPROC
+      - name: Build Kernel Toolchain
+        run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} kernel-toolchain -s -j$NPROC -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
 
-      - name: Build release and ISO
-        run: |
-          cd /usr/src/release
-          make release TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }}
-          mkdir -p /var/dyna-snapshot
-          make install DESTDIR=/var/dyna-snapshot
+      - name: Build Kernel
+        run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} KERNCONF=GENERIC NO_MODULES=yes buildkernel -s -j$NPROC $EXTRA_MAKE_ARGS
 
-      - name: Generate checksums
+      - name: Build ISO
         run: |
-          cd /var/dyna-snapshot
-          md5sum Dyna-*-disc1.iso > CHECKSUM.MD5
-          sha256sum Dyna-*-disc1.iso > CHECKSUM.SHA256
+          ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} release -s -j$NPROC
+          ls -lh ../build/home/runner/work/dynaOS/dynaOS/${{ matrix.target }}.${{ matrix.target_arch }}/release
 
-      - name: Upload ISO and checksums
+      - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DynaOS-${{ matrix.target_arch }}
-          path: |
-            /var/dyna-snapshot/Dyna-*-disc1.iso
-            /var/dyna-snapshot/CHECKSUM.*
+          name: kernel-${{ matrix.target }}-${{ matrix.target_arch }}
+          path: ../build/home/runner/work/dynaOS/dynaOS/${{ matrix.target }}.${{ matrix.target_arch }}/sys/GENERIC/kernel
+
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: iso-${{ matrix.target }}-${{ matrix.target_arch }}
+          path: ../build/home/runner/work/dynaOS/dynaOS/${{ matrix.target }}.${{ matrix.target_arch }}/release/*.iso
