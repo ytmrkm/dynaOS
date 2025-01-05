@@ -59,8 +59,8 @@ jobs:
       - name: Build ISO
         run: |
           cd ./release
-          make --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} release -s -j$NPROC
-          make --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} DISTDIR=/var/dynaos-final/ release
+          make TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} release -s -j$NPROC
+          make TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} DISTDIR=/var/dynaos-final/ release
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
