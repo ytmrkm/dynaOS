@@ -1,4 +1,4 @@
-name: Cross-build FreeBSD
+name: Build Image
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build FreeBSD ISO for ${{ matrix.target_arch }}
+    name: Build DynaOS ISO for ${{ matrix.target_arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -69,9 +69,9 @@ jobs:
           sha256sum Dyna-*-disc1.iso > CHECKSUM.SHA256
 
       - name: Upload ISO and checksums
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: freebsd-${{ matrix.target_arch }}
+          name: DynaOS-${{ matrix.target_arch }}
           path: |
             /var/dyna-snapshot/Dyna-*-disc1.iso
             /var/dyna-snapshot/CHECKSUM.*
