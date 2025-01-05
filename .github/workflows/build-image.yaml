@@ -1,0 +1,77 @@
+name: Cross-build FreeBSD
+
+on:
+  push:
+    branches: [ main, 'stable/13' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build FreeBSD ISO for ${{ matrix.target_arch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target_arch: [ amd64, aarch64 ]
+        os: [ ubuntu-22.04 ]
+        include:
+          - os: ubuntu-22.04
+            compiler: clang-14
+            cross-bindir: /usr/lib/llvm-14/bin
+            pkgs: bmake libarchive-dev clang-14 lld-14
+          - target_arch: amd64
+            target: amd64
+          - target_arch: aarch64
+            target: arm64
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install required packages (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update --quiet || true
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install ${{ matrix.pkgs }}
+
+      - name: Set up environment
+        run: |
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+          if [ -n "${{ matrix.cross-bindir }}" ]; then
+            echo "EXTRA_BUILD_ARGS=--cross-bindir=${{ matrix.cross-bindir }}" >> $GITHUB_ENV
+          fi
+          mkdir -p ../build
+          echo "MAKEOBJDIRPREFIX=${PWD%/*}/build" >> $GITHUB_ENV
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || echo 1)" >> $GITHUB_ENV
+
+      - name: Bootstrap bmake
+        run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -n
+
+      - name: Build world and kernel
+        run: |
+          cd /usr/src
+          make buildworld buildkernel TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -j$NPROC
+
+      - name: Build release and ISO
+        run: |
+          cd /usr/src/release
+          make release TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }}
+          mkdir -p /var/dyna-snapshot
+          make install DESTDIR=/var/dyna-snapshot
+
+      - name: Generate checksums
+        run: |
+          cd /var/dyna-snapshot
+          md5sum Dyna-*-disc1.iso > CHECKSUM.MD5
+          sha256sum Dyna-*-disc1.iso > CHECKSUM.SHA256
+
+      - name: Upload ISO and checksums
+        uses: actions/upload-artifact@v2
+        with:
+          name: freebsd-${{ matrix.target_arch }}
+          path: |
+            /var/dyna-snapshot/Dyna-*-disc1.iso
+            /var/dyna-snapshot/CHECKSUM.*
