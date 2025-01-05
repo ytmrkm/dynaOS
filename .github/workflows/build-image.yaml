@@ -68,7 +68,7 @@ jobs:
           path: ../build/home/runner/work/dynaOS/dynaOS/${{ matrix.target }}.${{ matrix.target_arch }}/sys/GENERIC/kernel
 
       - name: Upload ISO Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: iso-${{ matrix.target }}-${{ matrix.target_arch }}
           path: ../build/home/runner/work/dynaOS/dynaOS/${{ matrix.target }}.${{ matrix.target_arch }}/release/*.iso
