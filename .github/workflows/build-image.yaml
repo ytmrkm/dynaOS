@@ -59,8 +59,8 @@ jobs:
       - name: Build ISO
         run: |
           cd ./release
-          make TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} release -s -j$NPROC
-          make TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} DISTDIR=/var/dynaos-final/ release
+          bmake TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} release -s -j$NPROC
+          bmake TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} DISTDIR=/var/dynaos-final/ release
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
